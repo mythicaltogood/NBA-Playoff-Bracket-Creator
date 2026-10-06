@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NBA Playoff Bracket Builder</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&display=swap">
+<style>
+:root{--bg:#0a0e16;--p:#121926;--p2:#192236;--bd:#27324a;--tx:#e9eef8;--mut:#8995ae;--ac:#ff6a2b;--gold:#ffc94d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:14px}
+button,select,input{font:inherit;color:inherit}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(10,14,22,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--bd)}
+h1{margin:0;font:800 26px/1 "Barlow Condensed",Impact,sans-serif;letter-spacing:.02em}
+small{color:var(--mut)}
+.brand{display:flex;gap:10px;align-items:center}
+.ball{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ff9a5c,#d94e12);box-shadow:inset 0 0 0 2px #7a2a08}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+button{background:var(--p2);border:1px solid var(--bd);border-radius:9px;padding:7px 12px;cursor:pointer;transition:transform .12s,background .15s,border-color .15s}
+button:hover{background:#223050;border-color:#3b4b6f}button:active{transform:scale(.96)}
+button:disabled{opacity:.4;cursor:default}
+button.pri{background:var(--ac);border-color:var(--ac);color:#1a0900;font-weight:700}
+button:focus-visible,.chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+main{padding:12px 14px;max-width:1800px;margin:auto}
+.pool{background:var(--p);border:1px solid var(--bd);border-radius:12px;padding:10px;transition:border-color .15s}
+.pool.over{border-color:var(--ac)}
+.prow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
+.prow input[type=search]{flex:1;min-width:120px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:6px 10px}
+.seg button{padding:5px 10px;border-radius:0}.seg button:first-child{border-radius:8px 0 0 8px}.seg button:last-child{border-radius:0 8px 8px 0}
+.seg .on{background:var(--ac);color:#1a0900;border-color:var(--ac)}
+#chips{display:flex;flex-wrap:wrap;gap:6px;max-height:112px;overflow:auto}
+.chip{display:flex;align-items:center;gap:6px;padding:3px 9px 3px 4px;background:var(--p2);border:1px solid var(--bd);border-radius:20px;cursor:grab;user-select:none;transition:opacity .15s,border-color .15s}
+.chip.used{opacity:.4}.chip.sel{border-color:var(--gold);box-shadow:0 0 0 2px rgba(255,201,77,.35);opacity:1}
+.chip span{font-weight:700;font-size:12px}
+.lg{display:inline-flex;align-items:center;justify-content:center;flex:none;border-radius:50%;color:#fff;font:800 12px "Barlow Condensed",sans-serif;text-shadow:0 1px 2px rgba(0,0,0,.6);object-fit:cover;box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.tools input[type=range]{width:130px;accent-color:var(--ac)}
+.tools select{background:var(--p2);border:1px solid var(--bd);border-radius:8px;padding:6px}
+#vp{overflow:auto;height:min(76vh,780px);min-height:460px;border:1px solid var(--bd);border-radius:14px;background:radial-gradient(900px 400px at 50% 40%,#16203a,transparent),var(--p);touch-action:pan-x pan-y pinch-zoom;cursor:grab}
+#vp.pan{cursor:grabbing;user-select:none}
+#br{display:grid;grid-template-columns:repeat(7,214px);column-gap:14px;row-gap:8px;padding:16px 18px;width:max-content}
+.ch{text-align:center;font:700 15px "Barlow Condensed",sans-serif;letter-spacing:.06em;color:var(--mut)}
+.ch.f{color:var(--gold)}
+.col{display:flex;flex-direction:column;justify-content:space-around;gap:14px}
+.col.fin{justify-content:center;gap:22px}
+.sr{background:var(--p2);border:1px solid var(--bd);border-radius:12px;overflow:hidden;transition:transform .15s,border-color .15s}
+.sr:hover{border-color:#3d4e75}
+.tm{display:flex;align-items:center;gap:7px;padding:6px 8px;border-left:4px solid var(--c,transparent);cursor:pointer;transition:background .2s,opacity .2s;min-height:44px}
+.tm+.tm{border-top:1px solid var(--bd)}
+.tm:hover{background:rgba(255,255,255,.05)}
+.tm.w{background:linear-gradient(90deg,rgba(255,201,77,.18),transparent)}.tm.l{opacity:.45}
+.tm.empty{color:var(--mut);font-size:12px;border-left-color:transparent;font-style:italic}
+.tm.over,.tm.empty.over{background:rgba(255,106,43,.25)}
+.sd{width:16px;text-align:center;font:700 14px "Barlow Condensed",sans-serif;color:var(--mut)}
+.nm{flex:1;min-width:0;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc{font:800 24px "Barlow Condensed",sans-serif;min-width:18px;text-align:right}
+.tm.w .sc{color:var(--gold)}
+.pips{display:flex;gap:3px;padding:6px 8px 4px;background:rgba(0,0,0,.2)}
+.pip{flex:1;min-width:0;height:22px;border-radius:6px;font:700 9px/22px system-ui;text-align:center;font-style:normal;cursor:pointer;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7);transition:transform .15s}
+.pip:hover{transform:translateY(-2px)}
+.pip.e{background:transparent;border:1px dashed var(--bd);color:var(--mut);cursor:default;text-shadow:none}
+.sf{display:flex;justify-content:space-between;align-items:center;padding:2px 8px 6px;background:rgba(0,0,0,.2);font-size:11px;color:var(--mut)}
+.sf button{padding:1px 6px;font-size:12px;margin-left:3px;background:transparent}
+.champ{text-align:center;cursor:pointer;color:var(--gold);font:800 18px "Barlow Condensed",sans-serif}
+.champ .tro{font-size:44px;filter:drop-shadow(0 0 14px rgba(255,201,77,.5))}
+.champ .lg{margin:4px 0}
+.tro.dim{opacity:.25;filter:grayscale(1)}
+.ov{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(5,8,14,.86);padding:16px;overflow:auto}
+.ov.show{display:flex}
+.box{background:var(--p);border:1px solid var(--bd);border-radius:16px;padding:18px;width:min(440px,100%);animation:pop .35s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{transform:scale(.8);opacity:0}}
+.cbox{text-align:center;border-color:var(--c);box-shadow:0 0 60px color-mix(in srgb,var(--c) 50%,transparent)}
+.cbox h2{margin:6px 0;font:800 44px/1 "Barlow Condensed",sans-serif;color:var(--gold)}
+.cbox .big{font:800 34px "Barlow Condensed",sans-serif}
+.cf{position:fixed;top:-20px;width:9px;height:14px;z-index:60;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.fld{display:grid;grid-template-columns:90px 1fr;gap:8px;align-items:center;margin:8px 0}
+.fld input,.fld select{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:6px 8px;width:100%}
+.fld input[type=color]{padding:0;height:32px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:#223050;border:1px solid var(--bd);padding:8px 16px;border-radius:20px;opacity:0;transition:.25s;z-index:80;pointer-events:none}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:640px){h1{font-size:21px}header small{display:none}button{padding:6px 9px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style></head><body>
+<header>
+ <div class="brand"><span class="ball"></span><div><h1>Playoff Bracket Builder</h1><small>Drag teams into seeds. Click a team to log a game win.</small></div></div>
+ <div class="btns">
+  <button id="bRand">🔀 Randomize</button><button id="bSim" class="pri">⚡ Simulate</button><button id="bUndo">↩ Undo</button><button id="bSave">💾 Save</button><button id="bReset">⟲ Reset</button><button id="bTeams">⚙ Teams</button>
+ </div>
+</header>
+<main>
+ <section class="pool" id="pool">
+  <div class="prow"><b>Teams</b>
+   <span class="seg" id="seg"><button data-f="ALL" class="on">All 30</button><button data-f="E">East</button><button data-f="W">West</button></span>
+   <input type="search" id="q" placeholder="Search teams">
+   <small>Drop a team on any seed. Tap a team, then tap a seed on mobile. Double-click a seed to clear it.</small></div>
+  <div id="chips"></div>
+ </section>
+ <div class="tools">
+  <button id="zo" aria-label="Zoom out">−</button><input type="range" id="zr" min="0.4" max="1.6" step="0.05" value="1" aria-label="Zoom"><button id="zi" aria-label="Zoom in">+</button><button id="zf">Fit</button><b id="zl">100%</b>
+  <label style="margin-left:auto"><small>Series length </small><select id="need"><option value="4">Best of 7</option><option value="3">Best of 5</option><option value="2">Best of 3</option></select></label>
+ </div>
+ <div id="vp"><div id="br"></div></div>
+</main>
+<div class="ov" id="modal"><div class="box">
+ <div class="fld"><b>Team</b><select id="edT"></select></div>
+ <div class="fld"><span>City</span><input id="edCity"></div>
+ <div class="fld"><span>Name</span><input id="edName"></div>
+ <div class="fld"><span>Short code</span><input id="edAb" maxlength="4"></div>
+ <div class="fld"><span>Colors</span><div style="display:flex;gap:8px"><input type="color" id="edC1"><input type="color" id="edC2"></div></div>
+ <div class="fld"><span>Conference</span><select id="edConf"><option value="E">East</option><option value="W">West</option></select></div>
+ <div class="fld"><span>Rating <b id="edOv"></b></span><input type="range" id="edOvr" min="40" max="99"></div>
+ <div class="fld"><span>Logo</span><div style="display:flex;gap:8px;align-items:center"><span id="edPrev"></span><input type="file" id="edLogo" accept="image/*"><button id="edRm">Remove</button></div></div>
+ <small>Rating drives Simulate: higher-rated and higher-seeded teams win more games.</small>
+ <div style="display:flex;justify-content:space-between;margin-top:12px"><button id="edReset">Restore default</button><button class="pri" id="edClose">Done</button></div>
+</div></div>
+<div class="ov" id="champ"></div>
+<div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),K='nbaBracketV1';
+const RAW=`ATL|Atlanta|Hawks|#E03A3E|#C1D32F
+BOS|Boston|Celtics|#007A33|#BA9653
+BKN|Brooklyn|Nets|#111111|#D0D0D0
+CHA|Charlotte|Hornets|#1D1160|#00788C
+CHI|Chicago|Bulls|#CE1141|#111111
+CLE|Cleveland|Cavaliers|#860038|#FDBB30
+DET|Detroit|Pistons|#C8102E|#1D42BA
+IND|Indiana|Pacers|#002D62|#FDBB30
+MIA|Miami|Heat|#98002E|#F9A01B
+MIL|Milwaukee|Bucks|#00471B|#EEE1C6
+NYK|New York|Knicks|#006BB6|#F58426
+ORL|Orlando|Magic|#0077C0|#111111
+PHI|Philadelphia|76ers|#006BB6|#ED174C
+TOR|Toronto|Raptors|#CE1141|#111111
+WAS|Washington|Wizards|#002B5C|#E31837
+DAL|Dallas|Mavericks|#00538C|#B8C4CA
+DEN|Denver|Nuggets|#0E2240|#FEC524
+GSW|Golden State|Warriors|#1D428A|#FFC72C
+HOU|Houston|Rockets|#CE1141|#111111
+LAC|Los Angeles|Clippers|#C8102E|#1D428A
+LAL|Los Angeles|Lakers|#552583|#FDB927
+MEM|Memphis|Grizzlies|#5D76A9|#12173F
+MIN|Minnesota|Timberwolves|#0C2340|#236192
+NOP|New Orleans|Pelicans|#0C2340|#C8102E
+OKC|Oklahoma City|Thunder|#007AC1|#EF3B24
+PHX|Phoenix|Suns|#1D1160|#E56020
+POR|Portland|Trail Blazers|#E03A3E|#111111
+SAC|Sacramento|Kings|#5A2D81|#63727A
+SAS|San Antonio|Spurs|#8A8D8F|#111111
+UTA|Utah|Jazz|#002B5C|#F9A01B`;
+const DT={};RAW.split('\n').forEach((l,i)=>{const[ab,city,name,c1,c2]=l.split('|');DT[ab]={k:ab,ab,city,name,c1,c2,conf:i<15?'E':'W',ovr:72,logo:''}});
+const DS={E:['BOS','NYK','CLE','IND','MIL','ORL','MIA','DET'],W:['OKC','HOU','LAL','DEN','MIN','LAC','GSW','MEM']};
+const P=[[0,7],[3,4],[2,5],[1,6]];
+const ORDER=['E10','E11','E12','E13','W10','W11','W12','W13','E20','E21','W20','W21','E3','W3','F'];
+const cp=o=>JSON.parse(JSON.stringify(o));
+let state={teams:cp(DT),seeds:cp(DS),games:{},keys:{},need:4},hist=[],S={},ui={z:1,sel:null,f:'ALL',q:'',champ:null,ed:'ATL'};
+try{const j=localStorage.getItem(K);if(j){const o=JSON.parse(j);state=Object.assign(state,o);}}catch(e){}
+
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),1600)}
+const snap=()=>JSON.stringify({seeds:state.seeds,games:state.games,keys:state.keys,need:state.need});
+function mut(fn){hist.push(snap());if(hist.length>60)hist.shift();fn();render()}
+function lg(k,sz=30){const t=state.teams[k];if(t.logo)return`<img class="lg" alt="" src="${t.logo}" style="width:${sz}px;height:${sz}px">`;return`<span class="lg" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*.36)}px;background:linear-gradient(135deg,${t.c1},${t.c2})">${t.ab}</span>`}
+
+function calc(){
+ const N=state.need;S={};
+ const mk=(id,a,b)=>{const key=(a?a.t:'')+'|'+(b?b.t:'')+'|'+N;
+  if(state.keys[id]!==key){state.keys[id]=key;state.games[id]=[]}
+  const g=state.games[id];let wa=0,wb=0,u=0;
+  for(const x of g){if(wa==N||wb==N)break;x?wb++:wa++;u++}
+  g.length=u;const d=wa==N||wb==N;
+  return S[id]={id,a,b,g,wa,wb,win:d?(wa==N?a:b):null,wi:d?(wa==N?0:1):null}};
+ const st=(c,i)=>{const k=state.seeds[c][i];return k?{t:k,s:i+1}:null};
+ for(const c of 'EW'){
+  for(let k=0;k<4;k++)mk(c+'1'+k,st(c,P[k][0]),st(c,P[k][1]));
+  for(let k=0;k<2;k++)mk(c+'2'+k,S[c+'1'+2*k].win,S[c+'1'+(2*k+1)].win);
+  mk(c+'3',S[c+'20'].win,S[c+'21'].win)}
+ mk('F',S.W3.win,S.E3.win)}
+
+function row(s,i,slot){
+ const x=i?s.b:s.a,att=slot?` data-slot="${slot}"`:'';
+ if(!x)return`<div class="tm empty"${att}>${slot?'Drop a team':'TBD'}</div>`;
+ const t=state.teams[x.t],w=s.win&&s.wi==i,l=s.win&&s.wi!=i;
+ return`<div class="tm${w?' w':''}${l?' l':''}"${att} data-sid="${s.id}" data-row="${i}"${slot?' draggable="true"':''} style="--c:${t.c1}" title="${t.city} ${t.name}"><span class="sd">${x.s}</span>${lg(x.t)}<span class="nm">${t.name}</span><span class="sc">${i?s.wb:s.wa}</span></div>`}
+function card(id,s0,s1){
+ const s=S[id],n=state.need*2-1;let pips='';
+ for(let i=0;i<n;i++){
+  if(i<s.g.length){const t=state.teams[(s.g[i]?s.b:s.a).t];pips+=`<i class="pip" data-sid="${id}" data-pip="${i}" style="background:${t.c1}" title="Game ${i+1}: ${t.city} ${t.name} won. Click to flip.">${t.ab}</i>`}
+  else pips+=`<i class="pip e">G${i+1}</i>`}
+ let msg='Awaiting teams';
+ if(s.a&&s.b){const A=state.teams[s.a.t],B=state.teams[s.b.t];
+  if(s.win){const W=s.wi?B:A;msg=`${W.ab} wins ${Math.max(s.wa,s.wb)}-${Math.min(s.wa,s.wb)}`}
+  else if(s.wa==s.wb)msg=s.wa?`Tied ${s.wa}-${s.wb}`:'Game 1 next';
+  else msg=`${s.wa>s.wb?A.ab:B.ab} leads ${Math.max(s.wa,s.wb)}-${Math.min(s.wa,s.wb)}`}
+ return`<div class="sr">${row(s,0,s0)}${row(s,1,s1)}<div class="pips">${pips}</div><div class="sf"><span>${msg}</span><span><button data-sim="${id}" title="Simulate series" ${s.a&&s.b?'':'disabled'}>🎲</button><button data-clr="${id}" title="Clear games">↺</button></span></div></div>`}
+function cards(c,r){
+ if(r==1)return[0,1,2,3].map(k=>card(c+'1'+k,c+':'+P[k][0],c+':'+P[k][1])).join('');
+ if(r==2)return[0,1].map(k=>card(c+'2'+k)).join('');
+ return card(c+'3')}
+function bracket(){
+ const H=['West First Round','West Semifinals','West Finals','NBA Finals','East Finals','East Semifinals','East First Round'];
+ let h=H.map((t,i)=>`<div class="ch${i==3?' f':''}">${t}</div>`).join('');
+ const f=S.F,champ=f.win?`<div class="champ" data-champ><div class="tro">🏆</div>${lg(f.win.t,56)}<div>${state.teams[f.win.t].name}</div></div>`:`<div class="champ"><div class="tro dim">🏆</div></div>`;
+ h+=`<div class="col">${cards('W',1)}</div><div class="col">${cards('W',2)}</div><div class="col">${cards('W',3)}</div><div class="col fin">${card('F')}${champ}</div><div class="col">${cards('E',3)}</div><div class="col">${cards('E',2)}</div><div class="col">${cards('E',1)}</div>`;
+ $('#br').innerHTML=h}
+function pool(){
+ const used=new Set([...state.seeds.E,...state.seeds.W]);
+ $('#chips').innerHTML=Object.values(state.teams).filter(t=>(ui.f=='ALL'||t.conf==ui.f)&&(t.city+t.name+t.ab).toLowerCase().includes(ui.q)).map(t=>`<div class="chip${used.has(t.k)?' used':''}${ui.sel==t.k?' sel':''}" draggable="true" data-pool="${t.k}" title="${t.city} ${t.name}">${lg(t.k,26)}<span>${t.ab}</span></div>`).join('')}
+function render(){
+ calc();bracket();pool();
+ $('#bUndo').disabled=!hist.length;$('#need').value=state.need;
+ const f=S.F;
+ if(f.win){const key=f.win.t+f.g.join('');if(ui.champ!==key){ui.champ=key;showChamp()}}else ui.champ=null}
+
+function sim(id){
+ const s=S[id];if(!s||!s.a||!s.b||s.win)return;
+ const r=x=>state.teams[x.t].ovr+(9-x.s)*2,p=1/(1+Math.pow(10,(r(s.b)-r(s.a))/30));
+ let wa=s.wa,wb=s.wb;while(wa<state.need&&wb<state.need){const x=Math.random()<p?0:1;s.g.push(x);x?wb++:wa++}}
+function place(slot,v,from){mut(()=>{const[c,i]=slot.split(':'),A=state.seeds;
+ if(from){const[c2,j]=v.split(':');[A[c][+i],A[c2][+j]]=[A[c2][+j],A[c][+i]]}
+ else{for(const k of 'EW')A[k]=A[k].map(x=>x==v?null:x);A[c][+i]=v}})}
+
+function showChamp(){
+ const s=S.F;if(!s.win)return;const t=state.teams[s.win.t],o=state.teams[(s.wi?s.a:s.b).t];
+ $('#champ').innerHTML=`<div class="box cbox" style="--c:${t.c1}"><div style="font-size:46px">🏆</div>${lg(s.win.t,120)}<h2>${t.city} ${t.name}</h2><div class="big">NBA CHAMPIONS</div><p style="color:var(--mut)">Beat the ${o.city} ${o.name} ${Math.max(s.wa,s.wb)}-${Math.min(s.wa,s.wb)} in the Finals.</p><div style="display:flex;gap:8px;justify-content:center"><button class="pri" id="cClose">Back to bracket</button><button id="cNew">Randomize again</button></div></div>`;
+ $('#champ').classList.add('show');
+ const cols=[t.c1,t.c2,'#ffc94d','#fff'];
+ for(let i=0;i<80;i++){const d=document.createElement('i');d.className='cf';d.style.cssText=`left:${Math.random()*100}vw;background:${cols[i%4]};animation-duration:${2+Math.random()*2.5}s;animation-delay:${Math.random()*.8}s`;document.body.appendChild(d);setTimeout(()=>d.remove(),5500)}}
+
+function setZ(z){ui.z=Math.max(.4,Math.min(1.6,z));$('#br').style.zoom=ui.z;$('#zr').value=ui.z;$('#zl').textContent=Math.round(ui.z*100)+'%'}
+function fit(){setZ(Math.min(1,($('#vp').clientWidth-4)/1620))}
+
+document.addEventListener('click',e=>{
+ const g=s=>e.target.closest(s);let el;
+ if(el=g('[data-pool]')){ui.sel=ui.sel==el.dataset.pool?null:el.dataset.pool;pool();return}
+ if(el=g('.pip[data-pip]')){const id=el.dataset.sid,i=+el.dataset.pip;mut(()=>{state.games[id][i]^=1});return}
+ if(el=g('[data-sim]')){const id=el.dataset.sim;mut(()=>{calc();sim(id)});return}
+ if(el=g('[data-clr]')){const id=el.dataset.clr;mut(()=>{state.games[id]=[]});return}
+ if(g('[data-champ]')){showChamp();return}
+ if(el=g('.tm')){const slot=el.dataset.slot;
+  if(ui.sel&&slot){const a=ui.sel;ui.sel=null;place(slot,a);return}
+  const s=S[el.dataset.sid];if(s&&s.a&&s.b&&!s.win)mut(()=>state.games[s.id].push(+el.dataset.row))}
+ if(g('#cClose'))$('#champ').classList.remove('show');
+ if(g('#cNew')){$('#champ').classList.remove('show');$('#bRand').click()}
+});
+document.addEventListener('dblclick',e=>{const t=e.target.closest('.tm[data-slot]');if(t){const[c,i]=t.dataset.slot.split(':');if(state.seeds[c][+i])mut(()=>{state.seeds[c][+i]=null})}});
+document.addEventListener('dragstart',e=>{const p=e.target.closest('[data-pool]'),s=e.target.closest('.tm[data-slot]');const v=p?'P:'+p.dataset.pool:s?'S:'+s.dataset.slot:'';if(!v)return;e.dataTransfer.setData('text/plain',v);e.dataTransfer.effectAllowed='move'});
+document.addEventListener('dragover',e=>{const t=e.target.closest('[data-slot],#pool');if(t){e.preventDefault();t.classList.add('over')}});
+document.addEventListener('dragleave',e=>{const t=e.target.closest('[data-slot],#pool');t&&t.classList.remove('over')});
+document.addEventListener('drop',e=>{
+ document.querySelectorAll('.over').forEach(x=>x.classList.remove('over'));
+ const v=e.dataTransfer.getData('text/plain');if(!v)return;
+ const t=e.target.closest('[data-slot]');e.preventDefault();
+ if(t)place(t.dataset.slot,v.slice(2),v[0]=='S');
+ else if(e.target.closest('#pool')&&v[0]=='S')mut(()=>{const[c,i]=v.slice(2).split(':');state.seeds[c][+i]=null})});
+
+$('#bRand').onclick=()=>mut(()=>{for(const c of 'EW'){const ids=Object.values(state.teams).filter(t=>t.conf==c).map(t=>t.k).sort(()=>Math.random()-.5).slice(0,8);while(ids.length<8)ids.push(null);state.seeds[c]=ids}state.games={};state.keys={}});
+$('#bSim').onclick=()=>mut(()=>{if(ORDER.some(i=>!S[i].a&&!S[i].b&&i.length==3&&i[1]=='1')){}for(const id of ORDER){calc();sim(id)}});
+$('#bUndo').onclick=()=>{if(!hist.length)return;Object.assign(state,JSON.parse(hist.pop()));render();toast('Undone')};
+$('#bSave').onclick=()=>{try{localStorage.setItem(K,JSON.stringify(state));toast('Bracket saved')}catch(e){toast('Saving is blocked in this browser')}};
+$('#bReset').onclick=()=>mut(()=>{state.seeds=cp(DS);state.games={};state.keys={}});
+$('#need').onchange=e=>mut(()=>{state.need=+e.target.value});
+$('#seg').onclick=e=>{const b=e.target.closest('[data-f]');if(!b)return;ui.f=b.dataset.f;document.querySelectorAll('#seg button').forEach(x=>x.classList.toggle('on',x==b));pool()};
+$('#q').oninput=e=>{ui.q=e.target.value.toLowerCase();pool()};
+$('#zi').onclick=()=>setZ(ui.z+.1);$('#zo').onclick=()=>setZ(ui.z-.1);$('#zf').onclick=fit;$('#zr').oninput=e=>setZ(+e.target.value);
+const vp=$('#vp');
+vp.addEventListener('wheel',e=>{if(e.ctrlKey||e.metaKey){e.preventDefault();setZ(ui.z*(e.deltaY<0?1.08:.92))}},{passive:false});
+let pan=null;
+vp.addEventListener('pointerdown',e=>{if(e.pointerType=='mouse'&&!e.target.closest('.tm,.pip,button')){pan={x:e.clientX,y:e.clientY,l:vp.scrollLeft,t:vp.scrollTop};vp.classList.add('pan')}});
+addEventListener('pointermove',e=>{if(pan){vp.scrollLeft=pan.l-(e.clientX-pan.x);vp.scrollTop=pan.t-(e.clientY-pan.y)}});
+addEventListener('pointerup',()=>{pan=null;vp.classList.remove('pan')});
+
+/* Team editor */
+const T=()=>state.teams[ui.ed];
+function fillEd(){const t=T();
+ $('#edT').innerHTML=Object.values(state.teams).map(x=>`<option value="${x.k}"${x.k==ui.ed?' selected':''}>${x.city} ${x.name}</option>`).join('');
+ $('#edCity').value=t.city;$('#edName').value=t.name;$('#edAb').value=t.ab;$('#edC1').value=t.c1;$('#edC2').value=t.c2;$('#edConf').value=t.conf;$('#edOvr').value=t.ovr;$('#edOv').textContent=t.ovr;$('#edPrev').innerHTML=lg(t.k,36)}
+const upd=(f,v)=>{T()[f]=v;$('#edPrev').innerHTML=lg(ui.ed,36);render()};
+$('#bTeams').onclick=()=>{fillEd();$('#modal').classList.add('show')};
+$('#edClose').onclick=()=>$('#modal').classList.remove('show');
+$('#edT').onchange=e=>{ui.ed=e.target.value;fillEd()};
+[['edCity','city'],['edName','name'],['edAb','ab'],['edC1','c1'],['edC2','c2'],['edConf','conf']].forEach(([i,f])=>$('#'+i).oninput=e=>upd(f,f=='ab'?e.target.value.toUpperCase():e.target.value));
+$('#edOvr').oninput=e=>{$('#edOv').textContent=e.target.value;upd('ovr',+e.target.value)};
+$('#edRm').onclick=()=>upd('logo','');
+$('#edReset').onclick=()=>{state.teams[ui.ed]=cp(DT[ui.ed]);fillEd();render()};
+$('#edLogo').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+ r.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas'),m=Math.min(im.width,im.height);c.width=c.height=96;c.getContext('2d').drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,96,96);upd('logo',c.toDataURL('image/png'))};im.src=r.result};r.readAsDataURL(f)};
+$('#modal').addEventListener('click',e=>{if(e.target.id=='modal')$('#modal').classList.remove('show')});
+
+render();fit();
+</script></body></html>
